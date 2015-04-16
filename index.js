@@ -11,94 +11,109 @@ config.load(require('./config.json'));
 server.start().then(function(app) {
 
     var _get = function(req, res) {
-        logger.debug("Read param");
+        logger.debug("Read data");
         db.get(req.params)
             .then(function(record) {
-                
+
                 var key = req.params.param;
-                var val;
-                
+                var val = null;
+
                 if(record) {
+
                     if(key) {
-                        val = record[ key ];
+
+
+                        if(record[ key ] instanceof Array || typeof record[ key ] === 'object') {
+                            val = JSON.stringify(record[ key ]);
+                        }
+                        else if(record[ key ] === undefined) {
+                            val = null;
+                        }
+                        else {
+                            val = record[ key ].toString();
+                        }
+
                     }
                     else {
                         val = {};
                         Object.keys(record).forEach(function(field) {
-                            if( field === '_id' || field === 'group' ) return;
+                            if( field === '_id') return;
                             val[field] = record[field];
                         });
                     }
-                    
+
                     logger.debug("Got result", val);
                 }
                 else {
                     logger.debug("Value is empty", record);
                 }
-                
-                
+
                 res.status(200).send(val);
             })
             .catch(function(err) {
                 logger.error(err);
                 res.status(500).send(err);
             });
-        
-    };
-    
-    var _create = function(req, res) {
-        
-        logger.debug("Create param", JSON.stringify(req.body));
-        db.remove(req.params).then(function() {
-            
-            db.set(req.params, req.body)
-                .then(function(data) {
-                    res.status(200).send(data);
-                })
-                .catch(function(err) {
-                    res.status(500).send(err);
-                });
 
-        });
     };
-    
+
+    var _create = function(req, res) {
+
+        logger.debug("Create data", JSON.stringify(req.body));
+        db.remove(req.params).then(function() {
+
+            return db.set(req.params, req.body)
+                .then(function(data) {
+                    res.status(200).send();
+                })
+
+        })
+        .catch(function(err) {
+            logger.error(err);
+            res.status(500).send(err);
+        });
+
+    };
+
     var _update = function(req, res) {
-        
-        logger.debug("Update param", JSON.stringify(req.body));
-        
+
+        logger.debug("Update data", JSON.stringify(req.body));
+
         db.set(req.params, req.body)
             .then(function(data) {
-                res.status(200).send(data);
+                res.status(200).send();
             })
             .catch(function(err) {
+                logger.error(err);
                 res.status(500).send(err);
             });
     };
-    
+
     var _delete = function(req, res) {
-        logger.debug("Delete param");
+        logger.debug("Delete data");
         db.remove(req.params, req.body)
             .then(function(data) {
-                res.status(200).send(data);
+                res.status(200).send();
             })
             .catch(function(err) {
+                logger.error(err);
                 res.status(500).send(err);
             });
     };
 
-    app.get('/:collection/:group/:param', _get);
-    app.get('/:collection/:group', _get);
+    app.get('/:group/:collection/:param', _get);
+    app.get('/:group/:collection', _get);
 
-    app.post('/:collection/:group/:param', _create);
-    app.post('/:collection/:group', _create);
-    
-    app.put('/:collection/:group/:param', _update);
-    app.put('/:collection/:group', _update);
+    app.post('/:group/:collection/:param', _create);
+    app.post('/:group/:collection', _create);
 
-    app.delete('/:collection/:group/:param', _delete);
-    app.delete('/:collection/:group', _delete);
-    
-    
+    app.put('/:group/:collection/:param', _update);
+    app.put('/:group/:collection', _update);
+
+    app.delete('/:group/:collection/:param', _delete);
+    app.delete('/:group/:collection', _delete);
+
+
 });
 
 process.on('SIGINT', function() {
