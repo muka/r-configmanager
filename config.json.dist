@@ -1,5 +1,6 @@
 {
     "mongodb": "mongodb://localhost:27017/raptor",
+    "apiBasePath": null,
     "host": "localhost",
     "port": "3000"
 }
