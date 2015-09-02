@@ -1,0 +1,6 @@
+{
+    "mongodb": "mongodb://192.168.100.100:27017/config_manager_test",
+    "apiBasePath": null,
+    "host": "localhost",
+    "port": "3999"
+}
