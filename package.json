@@ -16,5 +16,9 @@
     "mongodb": "^2.0.27",
     "node-uuid": "^1.4.3",
     "winston": "^1.0.0"
+  },
+  "devDependencies": {
+    "request-promise": "^0.4.3",
+    "config-manager-client": "*"
   }
 }

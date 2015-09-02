@@ -1,7 +1,9 @@
 
+var Promise = require('bluebird')
+
 var configure = function (conf) {
     var config = require('./lib/config')
-    config.load(conf)
+    var cfg = config.load(conf)
 }
 
 var mount = function (app) {
@@ -11,64 +13,65 @@ var mount = function (app) {
     var logger = require('./lib/logger')
 
     var _get = function (req, res) {
-        logger.debug("Read data");
+        logger.debug("Read data")
         db.get(req.params)
             .then(function (record) {
 
-                var key = req.params.param;
-                var val = null;
+                var key = req.params.param
+                var val = null
 
                 if(record) {
                     if(key) {
 
                         if(record[key] instanceof Array || typeof record[key] === 'object') {
-                            val = JSON.stringify(record[key]);
+                            val = JSON.stringify(record[key])
                         } else if(record[key] === undefined) {
-                            val = null;
+                            val = null
                         } else {
-                            val = record[key].toString();
+                            val = record[key].toString()
                         }
 
                     } else {
-                        val = {};
+                        val = {}
                         Object.keys(record).forEach(function (field) {
-                            if(field === '_id') return;
-                            val[field] = record[field];
+                            if(field === '_id') return
+                            val[field] = record[field]
                         });
                     }
 
-                    logger.debug("Got result", val);
-                    res.status(200).send(val);
+                    logger.debug("Got result", val)
+                    res.status(200).send(val)
 
                 } else {
 
-                    logger.debug("Value is empty", record);
-                    res.status(204).send();
+                    logger.debug("Value is empty", record)
+                    res.status(204).send()
 
                 }
 
             })
             .catch(function (err) {
-                logger.error(err);
-                res.status(500).send(err);
+                logger.error(err)
+                res.status(500).send(err)
             });
 
     };
 
     var _create = function (req, res) {
 
-        logger.debug("Create data", JSON.stringify(req.body));
+        logger.debug("Create data", JSON.stringify(req.body))
         db.remove(req.params).then(function () {
 
-                return db.set(req.params, req.body)
+                return db
+                    .set(req.params, req.body)
                     .then(function (data) {
-                        res.status(200).send();
+                        res.status(200).send()
                     })
 
             })
             .catch(function (err) {
-                logger.error(err);
-                res.status(500).send(err);
+                logger.error(err)
+                res.status(500).send(err)
             });
 
     };
@@ -112,6 +115,7 @@ var mount = function (app) {
     app.delete(apiBasePath + '/:group/:collection/:param', _delete);
     app.delete(apiBasePath + '/:group/:collection', _delete);
 
+    return Promise.resolve()
 }
 
 var setLogger = function (log) {
@@ -125,22 +129,24 @@ var start = function (conf) {
     var logger = require('./lib/logger').createDefaultLogger()
     var server = require('./lib/server')
 
-    server.start().then(mount);
-    process.on('SIGINT', function () {
-        try {
-            stop();
-        } catch(e) {
-            console.error(e)
-            process.exit()
-        }
-    });
+    // process.on('SIGINT', function () {
+    //     try {
+    //         stop();
+    //     } catch(e) {
+    //         console.error(e)
+    //         process.exit()
+    //     }
+    // });
+
+    return server.start().then(mount);
 }
 
 var stop = function () {
     var db = require('./lib/db')
     db.disconnect().then(function () {
-        logger.debug("Disconnected");
-        process.exit(0);
+        require('./lib/server').stop()
+        require('./lib/logger').debug("Disconnected");
+        // process.exit(0);
     });
 }
 
