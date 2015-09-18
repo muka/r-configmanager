@@ -119,7 +119,7 @@ var mount = function (app) {
 }
 
 var setLogger = function (log) {
-    var logger = require('./lib/logger').setLogger(log)
+    require('./lib/logger').setLogger(log)
 }
 
 var start = function (conf) {
@@ -129,15 +129,6 @@ var start = function (conf) {
     var logger = require('./lib/logger').createDefaultLogger()
     var server = require('./lib/server')
 
-    // process.on('SIGINT', function () {
-    //     try {
-    //         stop();
-    //     } catch(e) {
-    //         console.error(e)
-    //         process.exit()
-    //     }
-    // });
-
     return server.start().then(mount);
 }
 
@@ -146,12 +137,12 @@ var stop = function () {
     db.disconnect().then(function () {
         require('./lib/server').stop()
         require('./lib/logger').debug("Disconnected");
-        // process.exit(0);
     });
 }
 
 module.exports.start = start
 module.exports.stop = stop
 module.exports.mount = mount
+module.exports.useDb = require('./lib/db').useDb
 module.exports.configure = configure
 module.exports.setLogger = setLogger
