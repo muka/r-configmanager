@@ -1,0 +1,6 @@
+{
+    "mongodb": "mongodb://localhost:27017/config",
+    "apiBasePath": "/config",
+    "host": "localhost",
+    "port": "3000"
+}
