@@ -19,6 +19,6 @@
   },
   "devDependencies": {
     "request-promise": "^0.4.3",
-    "config-manager-client": "*"
+    "config-manager-client": "git+https://github.com/muka/r-configmanager-client"
   }
 }
